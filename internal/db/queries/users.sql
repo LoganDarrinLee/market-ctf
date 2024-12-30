@@ -1,19 +1,20 @@
--- name: GetWithPrivateUsername :one
+-- name: GetUserWithPrivateUsername :one
 select * from users
 where private_username = $1 limit 1;
 
--- name: GetBySessionToken :one
+-- name: GetUserWithSessionToken :one
 select 
+    users.*,
     user_sessions.session_token,
     user_sessions.created_at,
-    user_sessions.expires_at,
-    users.id
-from user_sessions
-join users
-on user_sessions.user_id = users.id;
+    user_sessions.expires_at
+from users
+join user_sessions
+on users.id = user_sessions.session_token
+where user_sessions.session_token = $1;
 
 
--- name: GetByID :one
+-- name: GetUserWithUserID :one
 select * from users
 where id = $1 limit 1;
 

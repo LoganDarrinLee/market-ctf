@@ -60,13 +60,13 @@ func (q *Queries) DeleteUser(ctx context.Context, id int32) error {
 	return err
 }
 
-const getByID = `-- name: GetByID :one
+const getUserWithPrivateUsername = `-- name: GetUserWithPrivateUsername :one
 select id, role_id, private_username, public_username, password_hash, session_token from users
-where id = $1 limit 1
+where private_username = $1 limit 1
 `
 
-func (q *Queries) GetByID(ctx context.Context, id int32) (User, error) {
-	row := q.db.QueryRow(ctx, getByID, id)
+func (q *Queries) GetUserWithPrivateUsername(ctx context.Context, privateUsername string) (User, error) {
+	row := q.db.QueryRow(ctx, getUserWithPrivateUsername, privateUsername)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -79,36 +79,54 @@ func (q *Queries) GetByID(ctx context.Context, id int32) (User, error) {
 	return i, err
 }
 
-const getBySessionToken = `-- name: GetBySessionToken :one
+const getUserWithSessionToken = `-- name: GetUserWithSessionToken :one
 select 
+    users.id, users.role_id, users.private_username, users.public_username, users.password_hash, users.session_token,
     user_sessions.session_token,
-    user_sessions.expires_at,
-    users.id
-from user_sessions
-join users
-on user_sessions.user_id = users.id
+    user_sessions.created_at,
+    user_sessions.expires_at
+from users
+join user_sessions
+on users.id = user_sessions.session_token
+where user_sessions.session_token = $1
 `
 
-type GetBySessionTokenRow struct {
-	SessionToken pgtype.Text
-	ExpiresAt    pgtype.Timestamp
-	ID           int32
+type GetUserWithSessionTokenRow struct {
+	ID              int32
+	RoleID          pgtype.Int4
+	PrivateUsername string
+	PublicUsername  string
+	PasswordHash    string
+	SessionToken    pgtype.Text
+	SessionToken_2  pgtype.Text
+	CreatedAt       pgtype.Timestamp
+	ExpiresAt       pgtype.Timestamp
 }
 
-func (q *Queries) GetBySessionToken(ctx context.Context) (GetBySessionTokenRow, error) {
-	row := q.db.QueryRow(ctx, getBySessionToken)
-	var i GetBySessionTokenRow
-	err := row.Scan(&i.SessionToken, &i.ExpiresAt, &i.ID)
+func (q *Queries) GetUserWithSessionToken(ctx context.Context, sessionToken pgtype.Text) (GetUserWithSessionTokenRow, error) {
+	row := q.db.QueryRow(ctx, getUserWithSessionToken, sessionToken)
+	var i GetUserWithSessionTokenRow
+	err := row.Scan(
+		&i.ID,
+		&i.RoleID,
+		&i.PrivateUsername,
+		&i.PublicUsername,
+		&i.PasswordHash,
+		&i.SessionToken,
+		&i.SessionToken_2,
+		&i.CreatedAt,
+		&i.ExpiresAt,
+	)
 	return i, err
 }
 
-const getWithPrivateUsername = `-- name: GetWithPrivateUsername :one
+const getUserWithUserID = `-- name: GetUserWithUserID :one
 select id, role_id, private_username, public_username, password_hash, session_token from users
-where private_username = $1 limit 1
+where id = $1 limit 1
 `
 
-func (q *Queries) GetWithPrivateUsername(ctx context.Context, privateUsername string) (User, error) {
-	row := q.db.QueryRow(ctx, getWithPrivateUsername, privateUsername)
+func (q *Queries) GetUserWithUserID(ctx context.Context, id int32) (User, error) {
+	row := q.db.QueryRow(ctx, getUserWithUserID, id)
 	var i User
 	err := row.Scan(
 		&i.ID,

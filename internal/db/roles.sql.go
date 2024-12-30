@@ -40,13 +40,25 @@ func (q *Queries) DeleteRole(ctx context.Context, id int32) error {
 	return err
 }
 
-const getRole = `-- name: GetRole :one
+const getRoleWithID = `-- name: GetRoleWithID :one
 select id, user_role, role_info from user_roles
 where user_role = $1 limit 1
 `
 
-func (q *Queries) GetRole(ctx context.Context, userRole string) (UserRole, error) {
-	row := q.db.QueryRow(ctx, getRole, userRole)
+func (q *Queries) GetRoleWithID(ctx context.Context, userRole string) (UserRole, error) {
+	row := q.db.QueryRow(ctx, getRoleWithID, userRole)
+	var i UserRole
+	err := row.Scan(&i.ID, &i.UserRole, &i.RoleInfo)
+	return i, err
+}
+
+const getRoleWithName = `-- name: GetRoleWithName :one
+select id, user_role, role_info from user_roles
+where user_role = $1 limit 1
+`
+
+func (q *Queries) GetRoleWithName(ctx context.Context, userRole string) (UserRole, error) {
+	row := q.db.QueryRow(ctx, getRoleWithName, userRole)
 	var i UserRole
 	err := row.Scan(&i.ID, &i.UserRole, &i.RoleInfo)
 	return i, err

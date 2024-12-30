@@ -7,11 +7,13 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/LoganDarrinLee/market-ctf/internal/common"
+	"github.com/LoganDarrinLee/market-ctf/internal/db"
 )
 
 type Handler struct {
-	Pool   *pgxpool.Pool
-	Logger *common.BasicLogger
+	Queries *db.Queries
+	Pool    *pgxpool.Pool
+	Logger  *common.BasicLogger
 }
 
 func NewHandler(l *common.BasicLogger) *Handler {
@@ -66,8 +68,40 @@ func (h *Handler) aboutHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, data)
 }
 
-func (h *Handler) authHandler() http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Authenticated page."))
-	})
+func (h *Handler) authHandler(w http.ResponseWriter, r *http.Request) {
+	// Request context
+	rc := common.NewRequestContext(r.Context())
+
+	// Check authentication.
+	authenticated, userSessionRow, err := checkAuth(h.Queries, rc, "auth")
+	if err != nil {
+		h.Logger.WriteError(rc, "Error checking authentication.", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	// If the user is authenticated
+	if authenticated {
+		h.Logger.WriteInfo(rc, userSessionRow.PublicUsername)
+		w.Write([]byte("Authenticated"))
+	} else {
+		// The user was not authenticated.
+		http.Redirect(w, r, "/login", http.StatusUnauthorized)
+	}
+}
+
+// The login page handler will process user login attempts, or if they already
+// contain a valid session token, redirect to homepage.
+func (h *Handler) loginHandler(w http.ResponseWriter, r *http.Request) {
+	// New request context object.
+	rc := common.NewRequestContext(r.Context())
+
+	// Check for user authentication before processing a login.
+	if isAuthenticated() {
+		// User session token exists and is valid.
+		w.Write([]byte("Welcome to the market."))
+	} else {
+		// Proceed with rendering login information.
+		w.Write([]byte("Please proceed with login."))
+	}
+
 }

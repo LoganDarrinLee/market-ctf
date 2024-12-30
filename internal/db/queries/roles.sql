@@ -1,4 +1,8 @@
--- name: GetRole :one
+-- name: GetRoleWithID :one
+select * from user_roles
+where user_role = $1 limit 1;
+
+-- name: GetRoleWithName :one
 select * from user_roles
 where user_role = $1 limit 1;
 

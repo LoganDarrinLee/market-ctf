@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const createAccessLog = `-- name: CreateAccessLog :exec
+const createUserAccessLog = `-- name: CreateUserAccessLog :exec
 insert into user_access_logs (
     user_id, 
     logged_in,
@@ -21,36 +21,36 @@ insert into user_access_logs (
 )
 `
 
-type CreateAccessLogParams struct {
+type CreateUserAccessLogParams struct {
 	UserID    pgtype.Int4
 	LoggedIn  pgtype.Timestamp
 	LoggedOut pgtype.Timestamp
 }
 
 // create does not return an acces log.
-func (q *Queries) CreateAccessLog(ctx context.Context, arg CreateAccessLogParams) error {
-	_, err := q.db.Exec(ctx, createAccessLog, arg.UserID, arg.LoggedIn, arg.LoggedOut)
+func (q *Queries) CreateUserAccessLog(ctx context.Context, arg CreateUserAccessLogParams) error {
+	_, err := q.db.Exec(ctx, createUserAccessLog, arg.UserID, arg.LoggedIn, arg.LoggedOut)
 	return err
 }
 
-const deleteAccessLog = `-- name: DeleteAccessLog :exec
+const deleteUserAccessLog = `-- name: DeleteUserAccessLog :exec
 delete from user_access_logs where id = $1
 `
 
-func (q *Queries) DeleteAccessLog(ctx context.Context, id int32) error {
-	_, err := q.db.Exec(ctx, deleteAccessLog, id)
+func (q *Queries) DeleteUserAccessLog(ctx context.Context, id int32) error {
+	_, err := q.db.Exec(ctx, deleteUserAccessLog, id)
 	return err
 }
 
-const lastLoggedIn = `-- name: LastLoggedIn :one
+const getLastAccessLogWithUserID = `-- name: GetLastAccessLogWithUserID :one
 select id, user_id, logged_in, logged_out from user_access_logs 
 where user_id = $1 
 order by logged_in desc
 limit 1
 `
 
-func (q *Queries) LastLoggedIn(ctx context.Context, userID pgtype.Int4) (UserAccessLog, error) {
-	row := q.db.QueryRow(ctx, lastLoggedIn, userID)
+func (q *Queries) GetLastAccessLogWithUserID(ctx context.Context, userID pgtype.Int4) (UserAccessLog, error) {
+	row := q.db.QueryRow(ctx, getLastAccessLogWithUserID, userID)
 	var i UserAccessLog
 	err := row.Scan(
 		&i.ID,

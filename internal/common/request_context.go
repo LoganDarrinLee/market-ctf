@@ -11,21 +11,28 @@ func GenerateNewID() string {
 	return xid.New().String()
 }
 
+// Request context will not contain user info.
 type RequestContext struct {
-	Ctx       context.Context
-	RequestID string
+	Ctx            context.Context
+	RequestID      string
+	SessionTokenID string
 }
 
 type contextKey string
 
 const (
-	RequestIDKey contextKey = "requestID"
-	SessionToken contextKey = "sessionToken"
+	RequestIDKey    contextKey = "requestID"
+	SessionTokenKey contextKey = "sessionToken"
 )
 
 func NewRequestContext(ctx context.Context) *RequestContext {
 	// Retrieve RequestID from context
 	reqID, _ := ctx.Value(RequestIDKey).(string)
+	tok, _ := ctx.Value(SessionTokenKey).(string)
 
-	return &RequestContext{Ctx: ctx, RequestID: reqID}
+	return &RequestContext{
+		Ctx:            ctx,
+		RequestID:      reqID,
+		SessionTokenID: tok,
+	}
 }

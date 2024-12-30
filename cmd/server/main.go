@@ -27,17 +27,17 @@ func main() {
 	logger := &common.BasicLogger{}
 
 	// Base routing handler
-	baseHandler := routing.NewHandler(logger)
+	appHandler := routing.NewHandler(logger)
 
 	// Setup the base handlers database pool
-	baseHandler.Pool = config.InitDB(ctx, env)
-	defer baseHandler.Pool.Close()
+	appHandler.Pool = config.InitDB(ctx, env)
+	defer appHandler.Pool.Close()
 
 	// Router setup
 	router := http.NewServeMux()
 
 	// Configure base routes
-	routing.ConfigureRoutes(router, baseHandler)
+	routing.ConfigureRoutes(router, appHandler)
 
 	// Create middleware stack
 	stack := middleware.CreateStack(
