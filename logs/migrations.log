@@ -4,3 +4,7 @@
 2024/12/29 13:03:12 Starting database migration.
 2024/12/29 13:03:12 goose: no migrations to run. current version: 1
 2024/12/29 13:03:13 Database successfully migrated.
+2024/12/29 19:08:12 Starting database migration.
+2024/12/29 19:08:12 OK   00002_create_session_token.sql (38.84ms)
+2024/12/29 19:08:12 goose: successfully migrated database to version: 2
+2024/12/29 19:08:13 Database successfully migrated.

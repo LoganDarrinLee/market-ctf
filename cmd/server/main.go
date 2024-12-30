@@ -12,8 +12,8 @@ import (
 
 	"github.com/LoganDarrinLee/market-ctf/internal/common"
 	"github.com/LoganDarrinLee/market-ctf/internal/config"
-	"github.com/LoganDarrinLee/market-ctf/internal/handlers"
 	"github.com/LoganDarrinLee/market-ctf/internal/middleware"
+	"github.com/LoganDarrinLee/market-ctf/internal/routing"
 )
 
 func main() {
@@ -27,7 +27,7 @@ func main() {
 	logger := &common.BasicLogger{}
 
 	// Base routing handler
-	baseHandler := handlers.NewHandler(logger)
+	baseHandler := routing.NewHandler(logger)
 
 	// Setup the base handlers database pool
 	baseHandler.Pool = config.InitDB(ctx, env)
@@ -37,11 +37,12 @@ func main() {
 	router := http.NewServeMux()
 
 	// Configure base routes
-	handlers.BaseRoutes(router, baseHandler)
+	routing.ConfigureRoutes(router, baseHandler)
 
 	// Create middleware stack
 	stack := middleware.CreateStack(
 		middleware.WithRequestContext,
+		middleware.CheckAuth,
 		middleware.Logging,
 	)
 

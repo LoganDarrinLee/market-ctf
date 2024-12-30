@@ -3,8 +3,15 @@ select * from users
 where private_username = $1 limit 1;
 
 -- name: GetBySessionToken :one
-select * from users 
-where session_token = $1 limit 1;
+select 
+    user_sessions.session_token,
+    user_sessions.created_at,
+    user_sessions.expires_at,
+    users.id
+from user_sessions
+join users
+on user_sessions.user_id = users.id;
+
 
 -- name: GetByID :one
 select * from users
