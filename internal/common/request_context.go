@@ -20,6 +20,7 @@ type contextKey string
 
 const (
 	RequestIDKey contextKey = "requestID"
+	SessionToken contextKey = "sessionToken"
 )
 
 func NewRequestContext(ctx context.Context) *RequestContext {

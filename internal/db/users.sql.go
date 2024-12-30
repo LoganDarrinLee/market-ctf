@@ -80,21 +80,25 @@ func (q *Queries) GetByID(ctx context.Context, id int32) (User, error) {
 }
 
 const getBySessionToken = `-- name: GetBySessionToken :one
-select id, role_id, private_username, public_username, password_hash, session_token from users 
-where session_token = $1 limit 1
+select 
+    user_sessions.session_token,
+    user_sessions.expires_at,
+    users.id
+from user_sessions
+join users
+on user_sessions.user_id = users.id
 `
 
-func (q *Queries) GetBySessionToken(ctx context.Context, sessionToken pgtype.Text) (User, error) {
-	row := q.db.QueryRow(ctx, getBySessionToken, sessionToken)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.RoleID,
-		&i.PrivateUsername,
-		&i.PublicUsername,
-		&i.PasswordHash,
-		&i.SessionToken,
-	)
+type GetBySessionTokenRow struct {
+	SessionToken pgtype.Text
+	ExpiresAt    pgtype.Timestamp
+	ID           int32
+}
+
+func (q *Queries) GetBySessionToken(ctx context.Context) (GetBySessionTokenRow, error) {
+	row := q.db.QueryRow(ctx, getBySessionToken)
+	var i GetBySessionTokenRow
+	err := row.Scan(&i.SessionToken, &i.ExpiresAt, &i.ID)
 	return i, err
 }
 

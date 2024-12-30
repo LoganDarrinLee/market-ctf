@@ -1,8 +1,7 @@
-package handlers
+package routing
 
 import (
 	"html/template"
-	"log"
 	"net/http"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -19,28 +18,30 @@ func NewHandler(l *common.BasicLogger) *Handler {
 	return &Handler{Logger: l}
 }
 
-// Pick my brain page. Convert vault to knowledge
-func (h *Handler) brainPage() {}
-
 // Index page. Display general information
 func (h *Handler) indexHandler(w http.ResponseWriter, r *http.Request) {
+	// Access level,
+
 	// Extract request context
 	rc := common.NewRequestContext(r.Context())
 
 	// Log request info.
-	h.Logger.WriteInfo(rc, "GET /")
+	// h.Logger.WriteInfo(rc, "GET /")
 
+	// Page data
 	data := make(map[string]interface{})
 	data["title"] = "Index Title"
 	data["msg"] = []string{"test1", "second", "third", "fourth"}
 
+	// html template
 	tmpl, err := template.ParseFiles(
 		"web/templates/base.html", "web/templates/index.html")
 	if err != nil {
 		h.Logger.WriteError(rc, "Error parsing template files", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	log.Println(r.Context().Value(common.RequestIDKey))
+
+	// Execute template with page data
 	tmpl.Execute(w, data)
 }
 
@@ -63,4 +64,10 @@ func (h *Handler) aboutHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tmpl.Execute(w, data)
+}
+
+func (h *Handler) authHandler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("Authenticated page."))
+	})
 }

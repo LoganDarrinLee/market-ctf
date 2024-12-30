@@ -36,3 +36,12 @@ type UserRole struct {
 	UserRole string
 	RoleInfo pgtype.Text
 }
+
+type UserSession struct {
+	ID           int32
+	RequestID    pgtype.Text
+	CreatedAt    pgtype.Timestamp
+	ExpiresAt    pgtype.Timestamp
+	SessionToken pgtype.Text
+	UserID       pgtype.Int4
+}

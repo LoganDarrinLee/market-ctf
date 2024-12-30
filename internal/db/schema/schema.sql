@@ -104,6 +104,36 @@ ALTER TABLE public.user_roles ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
 
 
 --
+-- Name: user_sessions; Type: TABLE; Schema: public; Owner: development_user
+--
+
+CREATE TABLE public.user_sessions (
+    id integer NOT NULL,
+    request_id character varying(80),
+    created_at timestamp without time zone,
+    expires_at timestamp without time zone,
+    session_token character varying(80),
+    user_id integer
+);
+
+
+ALTER TABLE public.user_sessions OWNER TO development_user;
+
+--
+-- Name: user_sessions_id_seq; Type: SEQUENCE; Schema: public; Owner: development_user
+--
+
+ALTER TABLE public.user_sessions ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.user_sessions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
 -- Name: users; Type: TABLE; Schema: public; Owner: development_user
 --
 
@@ -166,6 +196,14 @@ ALTER TABLE ONLY public.user_roles
 
 
 --
+-- Name: user_sessions user_sessions_pkey; Type: CONSTRAINT; Schema: public; Owner: development_user
+--
+
+ALTER TABLE ONLY public.user_sessions
+    ADD CONSTRAINT user_sessions_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: development_user
 --
 
@@ -195,6 +233,14 @@ ALTER TABLE ONLY public.users
 
 ALTER TABLE ONLY public.user_access_logs
     ADD CONSTRAINT user_access_logs_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- Name: user_sessions user_sessions_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: development_user
+--
+
+ALTER TABLE ONLY public.user_sessions
+    ADD CONSTRAINT user_sessions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
 
 
 --
